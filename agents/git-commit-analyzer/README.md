@@ -18,7 +18,7 @@ An AI agent that analyzes your git changes and suggests meaningful commit messag
 ## Setup
 1. Install dependencies:
 ```bash
-pip install phi-agent GitPython
+pip install -r requirements.txt
 ```
 
 2. Make sure you have the Qwen 2.5 32B model installed locally

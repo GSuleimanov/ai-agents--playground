@@ -8,15 +8,16 @@ git_agent = Agent(
     name="Git Commit Analyzer",
     model=Ollama(
         id="qwen2.5:32b",
-        temperature=0.1
+        temperature=0.7
     ),
+    stream=True,
     instructions=[
         "You are an expert at analyzing git changes and creating conventional commit messages.",
         "Always follow the conventional commit format: <type>(<scope>): <description>",
         "Types include: feat, fix, docs, style, refactor, test, chore",
         "Be concise and specific in commit messages"
     ],
-    storage=SqlAgentStorage(table_name="git_agent", db_file="agents.db"),
+    storage=SqlAgentStorage(table_name="git_agent", db_file="/agents/history.db"),
     add_history_to_messages=True,
     markdown=True,
 )
@@ -46,7 +47,7 @@ def analyze_changes():
     {diff}
     """
 
-    return git_agent.run(prompt)
+    return git_agent.print_response(prompt)
 
 if __name__ == "__main__":
     suggestion = analyze_changes()
