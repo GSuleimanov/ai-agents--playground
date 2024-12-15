@@ -1,55 +1,50 @@
 from phi.agent import Agent
-from phi.model.ollama import Ollama
-from phi.storage.agent.sqlite import SqlAgentStorage
 from git import Repo
+import sys
 import os
 
-git_agent = Agent(
-    name="Git Commit Analyzer",
-    model=Ollama(
-        id="qwen2.5:32b",
-        temperature=0.7
-    ),
-    stream=True,
-    instructions=[
-        "You are an expert at analyzing git changes and creating conventional commit messages.",
-        "Always follow the conventional commit format: <type>(<scope>): <description>",
-        "Types include: feat, fix, docs, style, refactor, test, chore",
-        "Be concise and specific in commit messages"
-    ],
-    storage=SqlAgentStorage(table_name="git_agent", db_file="/agents/history.db"),
-    add_history_to_messages=True,
-    markdown=True,
-)
+# Add the parent directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from utils.agent_utils import parameters
 
 def analyze_changes():
-    # Get git repository
+    """Analyze staged git changes."""
     try:
         repo = Repo(os.getcwd())
         if not repo.git.rev_parse("--is-inside-work-tree"):
             return "Error: Not inside a git repository"
+
+        # Get only staged changes
+        staged_diff = repo.git.diff("--staged")
+
+        if not staged_diff:
+            return "No staged changes to analyze. Use 'git add' to stage your changes."
+
+        # Get the list of staged files
+        staged_files = repo.git.diff("--staged", "--name-only").split('\n')
+
+        result = ["Staged files:"]
+        result.extend([f"- {file}" for file in staged_files if file])
+        result.append("\nDetailed changes:")
+        result.append(staged_diff)
+
+        return "\n".join(result)
+
     except Exception as e:
-        return f"Error accessing git repository: {str(e)}"
-
-    # Get uncommitted changes
-    try:
-        diff = repo.git.diff()
-    except Exception as e:
-        return f"Error getting git diff: {str(e)}"
-
-    if not diff:
-        return "No changes to analyze"
-
-    # Analyze changes with AI
-    prompt = f"""
-    Analyze these git changes and suggest a conventional commit message:
-    
-    {diff}
-    """
-
-    return git_agent.print_response(prompt)
+        return f"Error analyzing git repository: {str(e)}"
 
 if __name__ == "__main__":
-    suggestion = analyze_changes()
-    print("\nSuggested commit message:")
-    print(suggestion)
+    result = analyze_changes()
+    if result.startswith("Error") or result.startswith("No staged"):
+        print(result)
+    else:
+        try:
+            git_agent = Agent(**parameters("git-commit-analyzer"))
+            prompt = "Analyze these git changes and suggest a conventional commit message:"
+            prompt += "\n\n"
+            prompt += f"## Context:\n{result}"
+            prompt += "\n\n"
+            prompt += "## Suggested Commit Message:"
+            git_agent.print_response(prompt)
+        except Exception as e:
+            print(f"Error creating agent or analyzing changes: {str(e)}")

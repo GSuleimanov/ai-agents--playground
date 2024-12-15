@@ -1,0 +1,13 @@
+# AI Agents Configuration
+
+# Model settings
+model:
+  provider: "ollama"  # Options: ollama, openai, local, etc.
+  name: "qwen2.5:32b"
+  temperature: 0.7
+  stream: true
+
+# Storage settings
+storage:
+  type: "sqlite"
+  db_file: "agents/history.db"
