@@ -1,0 +1,7 @@
+# Core dependencies
+phi-agent>=0.1.0
+GitPython>=3.1.0
+pydantic>=2.0.0
+rich>=10.0.0
+keyring>=24.0.0
+keyrings.alt>=4.2.0  # Better keyring backend support

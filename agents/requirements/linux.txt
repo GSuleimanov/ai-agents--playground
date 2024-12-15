@@ -1,0 +1,6 @@
+# Include base requirements
+-r base.txt
+
+# Linux-specific dependencies
+secretstorage>=3.3.3  # Linux Secret Service support
+dbus-python>=1.2.18   # Required for secretstorage

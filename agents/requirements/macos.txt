@@ -1,0 +1,5 @@
+# Include base requirements
+-r base.txt
+
+# macOS doesn't need additional dependencies for Keychain access
+# keyring uses the built-in Security framework

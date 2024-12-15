@@ -1,0 +1,5 @@
+# Include base requirements
+-r base.txt
+
+# Windows-specific dependencies
+pywin32>=306  # Windows Credential Manager support
